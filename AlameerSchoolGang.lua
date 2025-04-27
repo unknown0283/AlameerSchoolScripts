@@ -1,119 +1,117 @@
--- AlameerSchoolGang V1 - Best Blox Fruits Script 💚
--- Made with love for my bro 💚
+-- AlameerSchoolGang Hub (by ChatGPT <3)
 
--- Load UI Library
+-- Load Library
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
 
-local Window = Library.CreateLib("AlameerSchoolGang 💚", "BloodTheme")
+local Window = Library.CreateLib("AlameerSchoolGang - Blox Fruits", "Midnight")
+
+-- Tabs
+local FarmTab = Window:NewTab("Auto Farm")
+local FarmSection = FarmTab:NewSection("Farming")
+
+local FruitTab = Window:NewTab("Devil Fruits")
+local FruitSection = FruitTab:NewSection("Fruits Options")
+
+local SettingsTab = Window:NewTab("Settings")
+local SettingsSection = SettingsTab:NewSection("Settings")
 
 -- Variables
-local autofarm = false
-local selectedWeapon = "Melee"
+local AutoFarm = false
+local SelectedWeapon = "Melee"
 
 -- Functions
-function EquipWeapon(toolName)
+function EquipWeapon()
     for i,v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
-        if v.Name == toolName then
+        if v.Name == SelectedWeapon then
             game.Players.LocalPlayer.Character.Humanoid:EquipTool(v)
         end
     end
 end
 
-function GetNearestMob()
-    local dist, thing = math.huge
-    for i,v in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
-        if v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then
-            local magnitude = (v.HumanoidRootPart.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).magnitude
-            if magnitude < dist then
-                dist = magnitude
-                thing = v
+function AutoHaki()
+    if not game.Players.LocalPlayer.Character:FindFirstChild("HasBuso") then
+        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("Buso")
+    end
+end
+
+function AutoKen()
+    if not game.Players.LocalPlayer.PlayerGui:FindFirstChild("Observation") then
+        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("KenTalk", "Activate")
+    end
+end
+
+function StartFarm()
+    while AutoFarm do
+        pcall(function()
+            AutoHaki()
+            AutoKen()
+
+            local QuestHandler = require(game:GetService("ReplicatedStorage").Quest.QuestUtil)
+            local EnemyHandler = require(game:GetService("ReplicatedStorage").Enemy.EnemyUtil)
+
+            -- Automatically get the best quest
+            local myLevel = game.Players.LocalPlayer.Data.Level.Value
+            QuestHandler.RequestQuest(myLevel)
+
+            -- Find the nearest enemy
+            local enemy = nil
+            for i,v in pairs(workspace.Enemies:GetChildren()) do
+                if v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then
+                    enemy = v
+                    break
+                end
             end
-        end
-    end
-    return thing
-end
 
-function AutoFarm()
-    while autofarm do
-        local mob = GetNearestMob()
-        if mob then
-            pcall(function()
-                repeat
-                    task.wait()
-                    if selectedWeapon == "Melee" or selectedWeapon == "Sword" or selectedWeapon == "Fruit" then
-                        EquipWeapon(selectedWeapon)
-                        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = mob.HumanoidRootPart.CFrame * CFrame.new(0,10,0)
-                        game:GetService('VirtualUser'):CaptureController()
-                        game:GetService('VirtualUser'):Button1Down(Vector2.new(1280, 672))
-                    end
-                until mob.Humanoid.Health <= 0 or not autofarm
-            end)
-        end
-        task.wait(1)
+            -- Move to enemy
+            if enemy then
+                game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = enemy.HumanoidRootPart.CFrame * CFrame.new(0,10,0)
+
+                -- Equip Weapon
+                EquipWeapon()
+
+                -- Attack
+                game:GetService("VirtualUser"):CaptureController()
+                game:GetService("VirtualUser"):Button1Down(Vector2.new(1280, 672))
+            end
+        end)
+        wait(0.3)
     end
 end
 
--- Tabs
-local AutoFarmTab = Window:NewTab("Auto Farm")
-local FruitTab = Window:NewTab("Fruits")
-local BossTab = Window:NewTab("Boss Raids")
-local SettingsTab = Window:NewTab("Settings")
-
--- Sections
-local AutoFarmSection = AutoFarmTab:NewSection("Auto Farm Settings")
-local FruitSection = FruitTab:NewSection("Fruit Options")
-local BossSection = BossTab:NewSection("Boss Features")
-local SettingsSection = SettingsTab:NewSection("General")
-
--- Autofarm Controls
-AutoFarmSection:NewToggle("Enable AutoFarm", "Start/Stop Auto Farming", function(state)
-    autofarm = state
-    if state then
-        AutoFarm()
+-- AutoFarm Section
+FarmSection:NewToggle("Auto Farm Level", "Automatically farms enemies and quests.", function(state)
+    AutoFarm = state
+    if AutoFarm then
+        StartFarm()
     end
 end)
 
-AutoFarmSection:NewDropdown("Select Weapon", "Pick your fighting style", {"Melee", "Sword", "Fruit"}, function(currentOption)
-    selectedWeapon = currentOption
+FarmSection:NewDropdown("Select Weapon", "Pick the weapon to use.", {"Melee","Sword","Fruit"}, function(option)
+    SelectedWeapon = option
 end)
 
--- Fruit Controls
-FruitSection:NewButton("Auto Buy Random Fruit", "Buys random fruit", function()
+-- Devil Fruit Section
+FruitSection:NewButton("Auto Buy Fruit", "Buys a random fruit.", function()
     game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("GetFruits")
 end)
 
-FruitSection:NewButton("Auto Store Fruit", "Store fruit in backpack", function()
-    game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("StoreFruit")
-end)
-
-FruitSection:NewButton("Auto TP to Random Fruit", "Teleports to random fruit", function()
-    for i,v in pairs(game:GetService("Workspace"):GetChildren()) do
-        if v:IsA("Tool") and v:FindFirstChild("Handle") then
-            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.Handle.CFrame
+FruitSection:NewButton("Auto Store Fruits", "Stores any fruit you pick up.", function()
+    for i,v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
+        if v:IsA("Tool") and v:FindFirstChild("Fruit") then
+            game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("StoreFruit", v.Name)
         end
     end
 end)
 
--- Boss Controls
-BossSection:NewButton("Auto Start Raid", "Start a random raid", function()
-    game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("Raid", "Start")
+FruitSection:NewButton("Teleport To Random Fruit", "Teleports you to a fruit on map.", function()
+    for i,v in pairs(game.Workspace:GetChildren()) do
+        if string.find(v.Name, "Fruit") then
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.CFrame
+        end
+    end
 end)
 
-BossSection:NewButton("Auto Kill Bosses", "Kills nearby boss", function()
-    -- Later update for bosses
-end)
-
--- Settings
-SettingsSection:NewButton("Discord Notification", "Sends a fake notification", function()
-    game.StarterGui:SetCore("SendNotification", {
-        Title = "AlameerSchoolGang 💚",
-        Text = "Script running perfectly!",
-        Duration = 5
-    })
-end)
-
-SettingsSection:NewKeybind("Toggle UI", "Hide/Show UI", Enum.KeyCode.RightControl, function()
+-- Settings Section
+SettingsSection:NewKeybind("Toggle UI", "Open/Close UI", Enum.KeyCode.RightShift, function()
     Library:ToggleUI()
 end)
-
-print("✅ AlameerSchoolGang Loaded Successfully 💚")
