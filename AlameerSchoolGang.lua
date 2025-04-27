@@ -1,136 +1,108 @@
--- AlameerSchoolGang Script
--- Made with ❤️ for AlameerSchoolGang
+-- AlameerSchoolGang GUI Full Script
+-- Made with love 💚 by your bro
 
-local AlameerUI = Instance.new("ScreenGui")
-local MainFrame = Instance.new("Frame")
-local Title = Instance.new("TextLabel")
-local AutoFarmButton = Instance.new("TextButton")
-local WeaponDropdown = Instance.new("TextButton")
-local AutoBuyFruit = Instance.new("TextButton")
-local AutoStoreFruit = Instance.new("TextButton")
-local AutoTeleportFruit = Instance.new("TextButton")
-local AutoRaid = Instance.new("TextButton")
-local Notification = Instance.new("TextLabel")
+-- Loading Screen
+local loadingGui = Instance.new("ScreenGui")
+local loadingFrame = Instance.new("Frame")
+local loadingLabel = Instance.new("TextLabel")
 
--- UI Properties
-AlameerUI.Name = "AlameerSchoolGang"
-AlameerUI.Parent = game.CoreGui
+loadingGui.Parent = game.CoreGui
+loadingFrame.Parent = loadingGui
+loadingFrame.Size = UDim2.new(0, 300, 0, 100)
+loadingFrame.Position = UDim2.new(0.5, -150, 0.5, -50)
+loadingFrame.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+loadingFrame.BackgroundTransparency = 0.3
+loadingFrame.BorderSizePixel = 0
+loadingFrame.Visible = true
 
-MainFrame.Name = "MainFrame"
-MainFrame.Parent = AlameerUI
-MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-MainFrame.Position = UDim2.new(0.3, 0, 0.2, 0)
-MainFrame.Size = UDim2.new(0, 400, 0, 400)
-MainFrame.Active = true
-MainFrame.Draggable = true
+loadingLabel.Parent = loadingFrame
+loadingLabel.Size = UDim2.new(1, 0, 1, 0)
+loadingLabel.BackgroundTransparency = 1
+loadingLabel.Text = "Loading AlameerSchoolGang GUI... 🛠️"
+loadingLabel.Font = Enum.Font.SourceSansBold
+loadingLabel.TextSize = 24
+loadingLabel.TextColor3 = Color3.new(1,1,1)
 
-Title.Name = "Title"
-Title.Parent = MainFrame
-Title.BackgroundTransparency = 1
-Title.Position = UDim2.new(0, 0, 0, 0)
-Title.Size = UDim2.new(1, 0, 0, 50)
-Title.Font = Enum.Font.GothamBold
-Title.Text = "AlameerSchoolGang"
-Title.TextColor3 = Color3.fromRGB(0, 255, 0)
-Title.TextSize = 30
+wait(2)
+loadingGui:Destroy()
 
-AutoFarmButton.Name = "AutoFarm"
-AutoFarmButton.Parent = MainFrame
-AutoFarmButton.Position = UDim2.new(0.1, 0, 0.2, 0)
-AutoFarmButton.Size = UDim2.new(0, 300, 0, 40)
-AutoFarmButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-AutoFarmButton.Font = Enum.Font.Gotham
-AutoFarmButton.Text = "Start Auto Farm"
-AutoFarmButton.TextColor3 = Color3.fromRGB(0, 0, 0)
-AutoFarmButton.TextSize = 20
+-- Main GUI
+local Library = loadstring(game:HttpGet("https://pastebin.com/raw/FsJak6AT"))()
 
-WeaponDropdown.Name = "WeaponDropdown"
-WeaponDropdown.Parent = MainFrame
-WeaponDropdown.Position = UDim2.new(0.1, 0, 0.35, 0)
-WeaponDropdown.Size = UDim2.new(0, 300, 0, 40)
-WeaponDropdown.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-WeaponDropdown.Font = Enum.Font.Gotham
-WeaponDropdown.Text = "Choose Weapon: Melee/Sword/Fruit"
-WeaponDropdown.TextColor3 = Color3.fromRGB(0, 0, 0)
-WeaponDropdown.TextSize = 20
+local Window = Library:CreateWindow("AlameerSchoolGang 💚", Vector2.new(600, 400), Enum.KeyCode.RightControl)
 
-AutoBuyFruit.Name = "AutoBuyFruit"
-AutoBuyFruit.Parent = MainFrame
-AutoBuyFruit.Position = UDim2.new(0.1, 0, 0.5, 0)
-AutoBuyFruit.Size = UDim2.new(0, 300, 0, 40)
-AutoBuyFruit.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-AutoBuyFruit.Font = Enum.Font.Gotham
-AutoBuyFruit.Text = "Auto Buy Fruit"
-AutoBuyFruit.TextColor3 = Color3.fromRGB(0, 0, 0)
-AutoBuyFruit.TextSize = 20
+-- Auto Farm Tab
+local farmTab = Window:CreateTab("🥷 Auto Farm")
 
-AutoStoreFruit.Name = "AutoStoreFruit"
-AutoStoreFruit.Parent = MainFrame
-AutoStoreFruit.Position = UDim2.new(0.1, 0, 0.65, 0)
-AutoStoreFruit.Size = UDim2.new(0, 300, 0, 40)
-AutoStoreFruit.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-AutoStoreFruit.Font = Enum.Font.Gotham
-AutoStoreFruit.Text = "Auto Store Fruit"
-AutoStoreFruit.TextColor3 = Color3.fromRGB(0, 0, 0)
-AutoStoreFruit.TextSize = 20
-
-AutoTeleportFruit.Name = "AutoTeleportFruit"
-AutoTeleportFruit.Parent = MainFrame
-AutoTeleportFruit.Position = UDim2.new(0.1, 0, 0.8, 0)
-AutoTeleportFruit.Size = UDim2.new(0, 300, 0, 40)
-AutoTeleportFruit.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-AutoTeleportFruit.Font = Enum.Font.Gotham
-AutoTeleportFruit.Text = "Auto TP to Fruit"
-AutoTeleportFruit.TextColor3 = Color3.fromRGB(0, 0, 0)
-AutoTeleportFruit.TextSize = 20
-
-AutoRaid.Name = "AutoRaid"
-AutoRaid.Parent = MainFrame
-AutoRaid.Position = UDim2.new(0.1, 0, 0.95, 0)
-AutoRaid.Size = UDim2.new(0, 300, 0, 40)
-AutoRaid.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-AutoRaid.Font = Enum.Font.Gotham
-AutoRaid.Text = "Auto Start Raid"
-AutoRaid.TextColor3 = Color3.fromRGB(0, 0, 0)
-AutoRaid.TextSize = 20
-
-Notification.Name = "Notification"
-Notification.Parent = MainFrame
-Notification.Position = UDim2.new(0, 0, 1, 0)
-Notification.Size = UDim2.new(1, 0, 0, 50)
-Notification.BackgroundTransparency = 1
-Notification.Font = Enum.Font.GothamBold
-Notification.Text = "Welcome, AlameerSchoolGang!"
-Notification.TextColor3 = Color3.fromRGB(0, 255, 0)
-Notification.TextSize = 20
-
--- Functions (put your functions here)
-AutoFarmButton.MouseButton1Click:Connect(function()
-    Notification.Text = "Auto Farm Started!"
-    -- Your Auto Farm Code Here
+farmTab:CreateToggle("Auto Farm Level", function(state)
+    getgenv().AutoFarm = state
+    while getgenv().AutoFarm do
+        -- AutoFarm Script
+        pcall(function()
+            -- Your auto farm code for level quest goes here
+        end)
+        wait(1)
+    end
 end)
 
-WeaponDropdown.MouseButton1Click:Connect(function()
-    Notification.Text = "Weapon Selected!"
-    -- Your Weapon Select Code Here
+farmTab:CreateDropdown("Choose Weapon", {"Melee", "Sword", "Fruit"}, function(selected)
+    getgenv().SelectedWeapon = selected
 end)
 
-AutoBuyFruit.MouseButton1Click:Connect(function()
-    Notification.Text = "Auto Buying Fruits!"
-    -- Your Auto Buy Fruits Code Here
+-- Devil Fruits Tab
+local fruitTab = Window:CreateTab("🍏 Devil Fruits")
+
+fruitTab:CreateToggle("Auto Buy Random Fruit", function(state)
+    getgenv().AutoBuyFruit = state
+    while getgenv().AutoBuyFruit do
+        -- Auto buy fruit logic
+        wait(1)
+    end
 end)
 
-AutoStoreFruit.MouseButton1Click:Connect(function()
-    Notification.Text = "Auto Storing Fruits!"
-    -- Your Auto Store Fruits Code Here
+fruitTab:CreateToggle("Auto Store Fruit", function(state)
+    getgenv().AutoStoreFruit = state
+    while getgenv().AutoStoreFruit do
+        -- Auto store fruit logic
+        wait(1)
+    end
 end)
 
-AutoTeleportFruit.MouseButton1Click:Connect(function()
-    Notification.Text = "Teleporting to Fruits!"
-    -- Your Auto TP Fruits Code Here
+fruitTab:CreateToggle("Auto TP to Spawned Fruit", function(state)
+    getgenv().AutoTPFruit = state
+    while getgenv().AutoTPFruit do
+        -- Auto teleport to fruit logic
+        wait(1)
+    end
 end)
 
-AutoRaid.MouseButton1Click:Connect(function()
-    Notification.Text = "Starting Raids!"
-    -- Your Auto Raids Code Here
+-- Raids/Boss Tab
+local raidTab = Window:CreateTab("⚔️ Bosses / Raids")
+
+raidTab:CreateToggle("Auto Raid Boss", function(state)
+    getgenv().AutoRaid = state
+    while getgenv().AutoRaid do
+        -- Auto raid boss logic
+        wait(1)
+    end
+end)
+
+-- Settings Tab
+local settingsTab = Window:CreateTab("⚙️ Settings")
+
+settingsTab:CreateToggle("Notifications", function(state)
+    getgenv().Notifications = state
+end)
+
+settingsTab:CreateToggle("Safe Mode (Auto Respawn)", function(state)
+    getgenv().SafeMode = state
+    while getgenv().SafeMode do
+        pcall(function()
+            if game.Players.LocalPlayer.Character.Humanoid.Health == 0 then
+                wait(3)
+                game.Players.LocalPlayer:Kick("Respawning...")
+            end
+        end)
+        wait(1)
+    end
 end)
