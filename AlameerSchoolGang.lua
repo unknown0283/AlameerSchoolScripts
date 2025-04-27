@@ -1,66 +1,137 @@
--- AlameerSchoolGang V2 Script Made With Love ❤️
+-- AlameerSchoolGang V2
+-- Created for KING ALAMEER 👑
 
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
-local Window = Library.CreateLib("🔥 AlameerSchoolGang V2 🔥", "Midnight") -- Black/Green Theme
+-- Services
+local VirtualUser = game:GetService('VirtualUser')
+local Players = game:GetService('Players')
+local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService('RunService')
+local TweenService = game:GetService("TweenService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
--- MAIN TAB
-local Main = Window:NewTab("Main")
-local MainSection = Main:NewSection("Auto Farm / Boosts")
-
--- Auto Farm Button
-MainSection:NewButton("Auto Farm", "Start Auto Farming Enemies", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/NeaPchX2/Nea/main/BF"))()
-end)
-
--- Auto Quest Button
-MainSection:NewButton("Auto Quest", "Auto Accepts Best Quest", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/NeaPchX2/Nea/main/BFQuest"))()
-end)
-
--- Fast Attack Button
-MainSection:NewButton("Fast Attack", "Attack Faster", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/acsu123/HOHO_H/main/Fastattack"))()
-end)
-
--- Equip Best Weapon
-MainSection:NewButton("Equip Best Weapon", "Equips Best Weapon Automatically", function()
-    local tool = nil
-    for i,v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
-        if v:IsA("Tool") then
-            tool = v
-            break
+-- Functions
+function EquipWeapon()
+    for i,v in pairs(LocalPlayer.Backpack:GetChildren()) do
+        if v:IsA("Tool") and v.ToolTip == "Melee" then
+            LocalPlayer.Character.Humanoid:EquipTool(v)
         end
     end
-    if tool then
-        game.Players.LocalPlayer.Character.Humanoid:EquipTool(tool)
+end
+
+function AutoHaki()
+    if not LocalPlayer.Character:FindFirstChild("HasBuso") then
+        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("Buso")
     end
+end
+
+function TweenTo(pos)
+    local tween = TweenService:Create(LocalPlayer.Character.HumanoidRootPart, TweenInfo.new((LocalPlayer.Character.HumanoidRootPart.Position - pos.Position).Magnitude/300, Enum.EasingStyle.Linear), {CFrame = pos})
+    tween:Play()
+    return tween
+end
+
+function GetNearestEnemy()
+    local dist = math.huge
+    local target = nil
+    for i,v in pairs(workspace.Enemies:GetChildren()) do
+        if v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 and v:FindFirstChild("HumanoidRootPart") then
+            local mag = (LocalPlayer.Character.HumanoidRootPart.Position - v.HumanoidRootPart.Position).Magnitude
+            if mag < dist then
+                dist = mag
+                target = v
+            end
+        end
+    end
+    return target
+end
+
+-- GUI
+local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
+local Window = library.CreateLib("🔥 AlameerSchoolGang V2 🔥", "GrapeTheme")
+
+-- Tabs
+local FarmTab = Window:NewTab("Auto Farm")
+local TeleportTab = Window:NewTab("Teleport")
+local SettingsTab = Window:NewTab("Settings")
+
+local FarmSection = FarmTab:NewSection("Main Farm")
+local TeleportSection = TeleportTab:NewSection("Teleport")
+local SettingsSection = SettingsTab:NewSection("Settings")
+
+-- Variables
+local autofarm = false
+local selectmob = ""
+
+-- AutoFarm
+FarmSection:NewToggle("Auto Farm Level", "AutoFarm your level enemy", function(state)
+    autofarm = state
+end)
+
+FarmSection:NewTextBox("Select Enemy", "Type Enemy Name", function(txt)
+    selectmob = txt
+end)
+
+-- Teleport
+TeleportSection:NewButton("Teleport to First Sea", "", function()
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-260, 5, 1200)
+end)
+
+TeleportSection:NewButton("Teleport to Second Sea", "", function()
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(876, 5, 14400)
+end)
+
+TeleportSection:NewButton("Teleport to Third Sea", "", function()
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-12500, 5, 6000)
 end)
 
 -- FPS Boost
-MainSection:NewButton("FPS Boost", "Remove Lag and Boost FPS", function()
-    for _, v in pairs(game:GetDescendants()) do
-        if v:IsA("BasePart") then
+SettingsSection:NewButton("FPS Boost", "", function()
+    for _, v in pairs(workspace:GetDescendants()) do
+        if v:IsA("BasePart") and v.Transparency == 0 then
             v.Material = Enum.Material.SmoothPlastic
             v.Reflectance = 0
-        elseif v:IsA("Decal") then
-            v.Transparency = 1
         end
     end
-    settings().Rendering.QualityLevel = "Level01"
+    setfpscap(60)
 end)
 
--- TELEPORT TAB
-local Teleport = Window:NewTab("Teleport")
-local TeleportSection = Teleport:NewSection("Islands")
+-- Notifications
+function Notify(title, text)
+    game.StarterGui:SetCore("SendNotification", {
+        Title = title,
+        Text = text,
+        Duration = 5
+    })
+end
 
-TeleportSection:NewButton("Teleport to Starter Island", "TP Fast", function()
-    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(1005, 17, 1050)
+-- AutoFarm Loop
+RunService.RenderStepped:Connect(function()
+    if autofarm then
+        pcall(function()
+            local enemy = nil
+            if selectmob ~= "" then
+                for i,v in pairs(workspace.Enemies:GetChildren()) do
+                    if v.Name:lower():find(selectmob:lower()) and v.Humanoid.Health > 0 then
+                        enemy = v
+                        break
+                    end
+                end
+            else
+                enemy = GetNearestEnemy()
+            end
+            if enemy then
+                AutoHaki()
+                EquipWeapon()
+                if (LocalPlayer.Character.HumanoidRootPart.Position - enemy.HumanoidRootPart.Position).Magnitude > 5 then
+                    TweenTo(enemy.HumanoidRootPart.CFrame * CFrame.new(0,10,0))
+                else
+                    LocalPlayer.Character.HumanoidRootPart.CFrame = enemy.HumanoidRootPart.CFrame * CFrame.new(0,10,0)
+                    LocalPlayer.VirtualUser:CaptureController()
+                    LocalPlayer.VirtualUser:Button1Down(Vector2.new(1280, 672))
+                end
+            end
+        end)
+    end
 end)
 
--- Notification on Script Run
-game.StarterGui:SetCore("SendNotification", {
-    Title = "AlameerSchoolGang",
-    Text = "Script Activated! Let's Farm 🔥",
-    Duration = 5
-})
-
+Notify("🔥 AlameerSchoolGang Loaded", "Welcome King!")
