@@ -1,116 +1,112 @@
--- AlameerSchoolGang V2
--- Created for KING ALAMEER 👑
+--[[ 
+    AlameerSchoolGang GUI 💚 
+    Made for Alameer KING 👑 
+--]]
 
 -- Services
-local VirtualUser = game:GetService('VirtualUser')
-local Players = game:GetService('Players')
-local LocalPlayer = Players.LocalPlayer
-local RunService = game:GetService('RunService')
-local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local VirtualUser = game:GetService("VirtualUser")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+
+local LocalPlayer = Players.LocalPlayer
+
+-- Load UI Library (using Dark Green Theme)
+local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
+
+local Window = OrionLib:MakeWindow({Name = "🌟 AlameerSchoolGang GUI 🌟", HidePremium = false, SaveConfig = true, ConfigFolder = "AlameerSchoolGang", IntroEnabled = true, IntroText = "Welcome King Alameer! 💚"})
+
+-- Variables
+local autofarm = false
+local WeaponType = "Melee"
+local AutoRaid = false
+local AutoBuyFruit = false
+local AutoStoreFruit = false
+local AutoTPFruit = false
+local selectmob = ""
 
 -- Functions
-function EquipWeapon()
+function EquipSelectedWeapon()
     for i,v in pairs(LocalPlayer.Backpack:GetChildren()) do
-        if v:IsA("Tool") and v.ToolTip == "Melee" then
+        if v:IsA("Tool") and string.find(v.ToolTip, WeaponType) then
             LocalPlayer.Character.Humanoid:EquipTool(v)
+            break
         end
     end
 end
 
 function AutoHaki()
-    if not LocalPlayer.Character:FindFirstChild("HasBuso") then
-        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("Buso")
+    local Haki = LocalPlayer.Character:FindFirstChild("HasBuso")
+    if not Haki then
+        ReplicatedStorage.Remotes.CommF_:InvokeServer("Buso")
     end
 end
 
-function TweenTo(pos)
-    local tween = TweenService:Create(LocalPlayer.Character.HumanoidRootPart, TweenInfo.new((LocalPlayer.Character.HumanoidRootPart.Position - pos.Position).Magnitude/300, Enum.EasingStyle.Linear), {CFrame = pos})
-    tween:Play()
-    return tween
+function TweenTo(CF)
+    local hrp = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        hrp.CFrame = CF
+    end
 end
 
 function GetNearestEnemy()
-    local dist = math.huge
-    local target = nil
-    for i,v in pairs(workspace.Enemies:GetChildren()) do
-        if v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 and v:FindFirstChild("HumanoidRootPart") then
+    local nearest, dist = nil, math.huge
+    for i,v in pairs(Workspace.Enemies:GetChildren()) do
+        if v:FindFirstChild("HumanoidRootPart") and v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then
             local mag = (LocalPlayer.Character.HumanoidRootPart.Position - v.HumanoidRootPart.Position).Magnitude
             if mag < dist then
+                nearest = v
                 dist = mag
-                target = v
             end
         end
     end
-    return target
+    return nearest
 end
 
--- GUI
-local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
-local Window = library.CreateLib("🔥 AlameerSchoolGang V2 🔥", "GrapeTheme")
+-- Tabs and Sections
+local FarmTab = Window:MakeTab({Name = "⚔️ Auto Farm", Icon = "rbxassetid://6034288326", PremiumOnly = false})
+local FarmSection = FarmTab:AddSection({Name = "Main Auto Farm"})
 
--- Tabs
-local FarmTab = Window:NewTab("Auto Farm")
-local TeleportTab = Window:NewTab("Teleport")
-local SettingsTab = Window:NewTab("Settings")
-
-local FarmSection = FarmTab:NewSection("Main Farm")
-local TeleportSection = TeleportTab:NewSection("Teleport")
-local SettingsSection = SettingsTab:NewSection("Settings")
-
--- Variables
-local autofarm = false
-local selectmob = ""
-
--- AutoFarm
-FarmSection:NewToggle("Auto Farm Level", "AutoFarm your level enemy", function(state)
-    autofarm = state
+FarmSection:NewDropdown("Select Weapon Type", "Choose what to attack with", {"Melee", "Sword", "Fruit", "Gun"}, function(option)
+    WeaponType = option
 end)
 
-FarmSection:NewTextBox("Select Enemy", "Type Enemy Name", function(txt)
+FarmSection:NewTextbox("Select Enemy (Optional)", "Type enemy name", function(txt)
     selectmob = txt
 end)
 
--- Teleport
-TeleportSection:NewButton("Teleport to First Sea", "", function()
-    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-260, 5, 1200)
+FarmSection:NewToggle("Auto Farm", "Auto Farm enemies!", function(state)
+    autofarm = state
 end)
 
-TeleportSection:NewButton("Teleport to Second Sea", "", function()
-    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(876, 5, 14400)
+-- Extra Stuff Tab
+local ExtraTab = Window:MakeTab({Name = "✨ Extra Features", Icon = "rbxassetid://6034509993", PremiumOnly = false})
+local ExtraSection = ExtraTab:AddSection({Name = "Other Cool Features"})
+
+ExtraSection:NewToggle("Auto Start Raid", "Automatically starts raids", function(state)
+    AutoRaid = state
 end)
 
-TeleportSection:NewButton("Teleport to Third Sea", "", function()
-    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-12500, 5, 6000)
+ExtraSection:NewToggle("Auto Buy Random Fruit", "Buys fruits automatically", function(state)
+    AutoBuyFruit = state
 end)
 
--- FPS Boost
-SettingsSection:NewButton("FPS Boost", "", function()
-    for _, v in pairs(workspace:GetDescendants()) do
-        if v:IsA("BasePart") and v.Transparency == 0 then
-            v.Material = Enum.Material.SmoothPlastic
-            v.Reflectance = 0
-        end
-    end
-    setfpscap(60)
+ExtraSection:NewToggle("Auto Store Fruits", "Stores fruits automatically", function(state)
+    AutoStoreFruit = state
 end)
 
--- Notifications
-function Notify(title, text)
-    game.StarterGui:SetCore("SendNotification", {
-        Title = title,
-        Text = text,
-        Duration = 5
-    })
-end
+ExtraSection:NewToggle("Auto Teleport to Fruit", "Teleport to fruits when they spawn", function(state)
+    AutoTPFruit = state
+end)
 
--- AutoFarm Loop
+-- Main AutoFarm Logic
 RunService.RenderStepped:Connect(function()
     if autofarm then
         pcall(function()
             local enemy = nil
             if selectmob ~= "" then
-                for i,v in pairs(workspace.Enemies:GetChildren()) do
+                for i,v in pairs(Workspace.Enemies:GetChildren()) do
                     if v.Name:lower():find(selectmob:lower()) and v.Humanoid.Health > 0 then
                         enemy = v
                         break
@@ -121,17 +117,71 @@ RunService.RenderStepped:Connect(function()
             end
             if enemy then
                 AutoHaki()
-                EquipWeapon()
+                EquipSelectedWeapon()
                 if (LocalPlayer.Character.HumanoidRootPart.Position - enemy.HumanoidRootPart.Position).Magnitude > 5 then
                     TweenTo(enemy.HumanoidRootPart.CFrame * CFrame.new(0,10,0))
                 else
                     LocalPlayer.Character.HumanoidRootPart.CFrame = enemy.HumanoidRootPart.CFrame * CFrame.new(0,10,0)
-                    LocalPlayer.VirtualUser:CaptureController()
-                    LocalPlayer.VirtualUser:Button1Down(Vector2.new(1280, 672))
+                    VirtualUser:CaptureController()
+                    VirtualUser:Button1Down(Vector2.new(1280, 672))
                 end
             end
         end)
     end
 end)
 
-Notify("🔥 AlameerSchoolGang Loaded", "Welcome King!")
+-- Auto Raid
+task.spawn(function()
+    while task.wait(1) do
+        if AutoRaid then
+            pcall(function()
+                if Workspace["_WorldOrigin"].Locations:FindFirstChild("Island 5") then
+                    fireclickdetector(Workspace["_WorldOrigin"].Locations:FindFirstChild("Island 5").ClickDetector)
+                end
+            end)
+        end
+    end
+end)
+
+-- Auto Buy Fruit
+task.spawn(function()
+    while task.wait(10) do
+        if AutoBuyFruit then
+            pcall(function()
+                ReplicatedStorage.Remotes.CommF_:InvokeServer("PurchaseRandomFruit", true)
+            end)
+        end
+    end
+end)
+
+-- Auto Store Fruit
+task.spawn(function()
+    while task.wait(5) do
+        if AutoStoreFruit then
+            pcall(function()
+                for i,v in pairs(LocalPlayer.Backpack:GetChildren()) do
+                    if v:IsA("Tool") and v.ToolTip == "Devil Fruit" then
+                        ReplicatedStorage.Remotes.CommF_:InvokeServer("StoreFruit", v.Name)
+                    end
+                end
+            end)
+        end
+    end
+end)
+
+-- Auto Teleport to Fruit
+task.spawn(function()
+    while task.wait(1) do
+        if AutoTPFruit then
+            pcall(function()
+                for i,v in pairs(Workspace:GetDescendants()) do
+                    if v:IsA("Tool") and v.Parent:IsA("Model") then
+                        LocalPlayer.Character.HumanoidRootPart.CFrame = v.Parent.CFrame
+                    end
+                end
+            end)
+        end
+    end
+end)
+
+OrionLib:Init()
