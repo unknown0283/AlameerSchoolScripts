@@ -57,7 +57,7 @@ AutoFarmButton.MouseButton1Click:Connect(function()
             if Enemy then
                 local plr = game.Players.LocalPlayer
                 plr.Character.HumanoidRootPart.CFrame = Enemy.HumanoidRootPart.CFrame * CFrame.new(0, 10, 0)
-                plr.Character.Humanoid:ChangeState(11) -- Floating on top
+                plr.Character.Humanoid:ChangeState(11) -- Floating above enemy
                 game:GetService'VirtualUser':Button1Down(Vector2.new(0,0))
             end
         end)
