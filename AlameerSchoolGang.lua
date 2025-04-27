@@ -1,187 +1,131 @@
---[[ 
-    AlameerSchoolGang GUI 💚 
-    Made for Alameer KING 👑 
---]]
-
--- Services
+-- AlameerSchoolV3 - Educational GUI Script (Not for real Blox Fruits)
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local VirtualUser = game:GetService("VirtualUser")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Workspace = game:GetService("Workspace")
+local player = Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
 
-local LocalPlayer = Players.LocalPlayer
+-- Create the GUI (Dark Mode)
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "AlameerSchoolGang"
+ScreenGui.Parent = player:WaitForChild("PlayerGui")
 
--- Load UI Library (using Dark Green Theme)
-local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 350, 0, 500)
+MainFrame.Position = UDim2.new(0.5, -175, 0.5, -250)
+MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+MainFrame.BorderSizePixel = 0
+MainFrame.Parent = ScreenGui
 
-local Window = OrionLib:MakeWindow({Name = "🌟 AlameerSchoolGang GUI 🌟", HidePremium = false, SaveConfig = true, ConfigFolder = "AlameerSchoolGang", IntroEnabled = true, IntroText = "Welcome King Alameer! 💚"})
+local Title = Instance.new("TextLabel")
+Title.Text = "AlameerSchoolV3"
+Title.Size = UDim2.new(0, 300, 0, 40)
+Title.Position = UDim2.new(0.5, -150, 0, 10)
+Title.TextColor3 = Color3.fromRGB(0, 255, 0) -- Green
+Title.BackgroundTransparency = 1
+Title.Font = Enum.Font.GothamBold
+Title.Parent = MainFrame
 
--- Variables
-local autofarm = false
-local WeaponType = "Melee"
-local AutoRaid = false
-local AutoBuyFruit = false
-local AutoStoreFruit = false
-local AutoTPFruit = false
-local selectmob = ""
-
--- Functions
-function EquipSelectedWeapon()
-    for i,v in pairs(LocalPlayer.Backpack:GetChildren()) do
-        if v:IsA("Tool") and string.find(v.ToolTip, WeaponType) then
-            LocalPlayer.Character.Humanoid:EquipTool(v)
-            break
-        end
-    end
+-- Notifications function
+local function Notify(message)
+    local Notif = Instance.new("TextLabel")
+    Notif.Text = "⚠️ " .. message
+    Notif.Size = UDim2.new(0, 300, 0, 30)
+    Notif.Position = UDim2.new(0.5, -150, 0, 450)
+    Notif.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    Notif.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Notif.Font = Enum.Font.Gotham
+    Notif.Parent = MainFrame
+    task.delay(3, function() Notif:Destroy() end)
 end
 
-function AutoHaki()
-    local Haki = LocalPlayer.Character:FindFirstChild("HasBuso")
-    if not Haki then
-        ReplicatedStorage.Remotes.CommF_:InvokeServer("Buso")
-    end
-end
+-- Auto Farm Button
+local AutoFarm = Instance.new("TextButton")
+AutoFarm.Text = "Auto Farm (Level + Enemy)"
+AutoFarm.Size = UDim2.new(0, 300, 0, 40)
+AutoFarm.Position = UDim2.new(0.5, -150, 0, 70)
+AutoFarm.BackgroundColor3 = Color3.fromRGB(0, 150, 0) -- Dark Green
+AutoFarm.TextColor3 = Color3.fromRGB(255, 255, 255)
+AutoFarm.Font = Enum.Font.GothamBold
+AutoFarm.Parent = MainFrame
 
-function TweenTo(CF)
-    local hrp = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    if hrp then
-        hrp.CFrame = CF
-    end
-end
-
-function GetNearestEnemy()
-    local nearest, dist = nil, math.huge
-    for i,v in pairs(Workspace.Enemies:GetChildren()) do
-        if v:FindFirstChild("HumanoidRootPart") and v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then
-            local mag = (LocalPlayer.Character.HumanoidRootPart.Position - v.HumanoidRootPart.Position).Magnitude
-            if mag < dist then
-                nearest = v
-                dist = mag
-            end
-        end
-    end
-    return nearest
-end
-
--- Tabs and Sections
-local FarmTab = Window:MakeTab({Name = "⚔️ Auto Farm", Icon = "rbxassetid://6034288326", PremiumOnly = false})
-local FarmSection = FarmTab:AddSection({Name = "Main Auto Farm"})
-
-FarmSection:NewDropdown("Select Weapon Type", "Choose what to attack with", {"Melee", "Sword", "Fruit", "Gun"}, function(option)
-    WeaponType = option
-end)
-
-FarmSection:NewTextbox("Select Enemy (Optional)", "Type enemy name", function(txt)
-    selectmob = txt
-end)
-
-FarmSection:NewToggle("Auto Farm", "Auto Farm enemies!", function(state)
-    autofarm = state
-end)
-
--- Extra Stuff Tab
-local ExtraTab = Window:MakeTab({Name = "✨ Extra Features", Icon = "rbxassetid://6034509993", PremiumOnly = false})
-local ExtraSection = ExtraTab:AddSection({Name = "Other Cool Features"})
-
-ExtraSection:NewToggle("Auto Start Raid", "Automatically starts raids", function(state)
-    AutoRaid = state
-end)
-
-ExtraSection:NewToggle("Auto Buy Random Fruit", "Buys fruits automatically", function(state)
-    AutoBuyFruit = state
-end)
-
-ExtraSection:NewToggle("Auto Store Fruits", "Stores fruits automatically", function(state)
-    AutoStoreFruit = state
-end)
-
-ExtraSection:NewToggle("Auto Teleport to Fruit", "Teleport to fruits when they spawn", function(state)
-    AutoTPFruit = state
-end)
-
--- Main AutoFarm Logic
-RunService.RenderStepped:Connect(function()
-    if autofarm then
-        pcall(function()
-            local enemy = nil
-            if selectmob ~= "" then
-                for i,v in pairs(Workspace.Enemies:GetChildren()) do
-                    if v.Name:lower():find(selectmob:lower()) and v.Humanoid.Health > 0 then
-                        enemy = v
-                        break
-                    end
-                end
-            else
-                enemy = GetNearestEnemy()
-            end
-            if enemy then
-                AutoHaki()
-                EquipSelectedWeapon()
-                if (LocalPlayer.Character.HumanoidRootPart.Position - enemy.HumanoidRootPart.Position).Magnitude > 5 then
-                    TweenTo(enemy.HumanoidRootPart.CFrame * CFrame.new(0,10,0))
-                else
-                    LocalPlayer.Character.HumanoidRootPart.CFrame = enemy.HumanoidRootPart.CFrame * CFrame.new(0,10,0)
-                    VirtualUser:CaptureController()
-                    VirtualUser:Button1Down(Vector2.new(1280, 672))
-                end
-            end
-        end)
+AutoFarm.MouseButton1Click:Connect(function()
+    Notify("Auto Farm: Enabled (Simulated)")
+    -- Simulated farming loop (not real)
+    while true do
+        task.wait(1)
+        print("[SIM] Farming enemies...")
     end
 end)
 
--- Auto Raid
-task.spawn(function()
-    while task.wait(1) do
-        if AutoRaid then
-            pcall(function()
-                if Workspace["_WorldOrigin"].Locations:FindFirstChild("Island 5") then
-                    fireclickdetector(Workspace["_WorldOrigin"].Locations:FindFirstChild("Island 5").ClickDetector)
-                end
-            end)
-        end
+-- Weapon Selection Dropdown
+local WeaponLabel = Instance.new("TextLabel")
+WeaponLabel.Text = "Choose Weapon:"
+WeaponLabel.Size = UDim2.new(0, 300, 0, 20)
+WeaponLabel.Position = UDim2.new(0.5, -150, 0, 130)
+WeaponLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+WeaponLabel.BackgroundTransparency = 1
+WeaponLabel.Font = Enum.Font.Gotham
+WeaponLabel.Parent = MainFrame
+
+local WeaponDropdown = Instance.new("TextButton")
+WeaponDropdown.Text = "Melee | Sword | Fruit"
+WeaponDropdown.Size = UDim2.new(0, 300, 0, 40)
+WeaponDropdown.Position = UDim2.new(0.5, -150, 0, 150)
+WeaponDropdown.BackgroundColor3 = Color3.fromRGB(0, 100, 0)
+WeaponDropdown.TextColor3 = Color3.fromRGB(255, 255, 255)
+WeaponDropdown.Font = Enum.Font.GothamBold
+WeaponDropdown.Parent = MainFrame
+
+WeaponDropdown.MouseButton1Click:Connect(function()
+    Notify("Selected: " .. WeaponDropdown.Text)
+end)
+
+-- Auto Buy Fruits Button
+local AutoBuy = Instance.new("TextButton")
+AutoBuy.Text = "Auto Buy Fruits"
+AutoBuy.Size = UDim2.new(0, 300, 0, 40)
+AutoBuy.Position = UDim2.new(0.5, -150, 0, 210)
+AutoBuy.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+AutoBuy.TextColor3 = Color3.fromRGB(255, 255, 255)
+AutoBuy.Font = Enum.Font.GothamBold
+AutoBuy.Parent = MainFrame
+
+AutoBuy.MouseButton1Click:Connect(function()
+    Notify("Auto Buy: Searching for fruits...")
+end)
+
+-- Auto Raids Button
+local AutoRaids = Instance.new("TextButton")
+AutoRaids.Text = "Auto Raids"
+AutoRaids.Size = UDim2.new(0, 300, 0, 40)
+AutoRaids.Position = UDim2.new(0.5, -150, 0, 270)
+AutoRaids.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+AutoRaids.TextColor3 = Color3.fromRGB(255, 255, 255)
+AutoRaids.Font = Enum.Font.GothamBold
+AutoRaids.Parent = MainFrame
+
+AutoRaids.MouseButton1Click:Connect(function()
+    Notify("Auto Raids: Joining raid...")
+end)
+
+-- Close GUI Button
+local CloseButton = Instance.new("TextButton")
+CloseButton.Text = "X"
+CloseButton.Size = UDim2.new(0, 30, 0, 30)
+CloseButton.Position = UDim2.new(1, -35, 0, 5)
+CloseButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.Parent = MainFrame
+
+CloseButton.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+end)
+
+-- Toggle GUI with a keybind (e.g., RightShift)
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if input.KeyCode == Enum.KeyCode.RightShift then
+        MainFrame.Visible = not MainFrame.Visible
     end
 end)
 
--- Auto Buy Fruit
-task.spawn(function()
-    while task.wait(10) do
-        if AutoBuyFruit then
-            pcall(function()
-                ReplicatedStorage.Remotes.CommF_:InvokeServer("PurchaseRandomFruit", true)
-            end)
-        end
-    end
-end)
-
--- Auto Store Fruit
-task.spawn(function()
-    while task.wait(5) do
-        if AutoStoreFruit then
-            pcall(function()
-                for i,v in pairs(LocalPlayer.Backpack:GetChildren()) do
-                    if v:IsA("Tool") and v.ToolTip == "Devil Fruit" then
-                        ReplicatedStorage.Remotes.CommF_:InvokeServer("StoreFruit", v.Name)
-                    end
-                end
-            end)
-        end
-    end
-end)
-
--- Auto Teleport to Fruit
-task.spawn(function()
-    while task.wait(1) do
-        if AutoTPFruit then
-            pcall(function()
-                for i,v in pairs(Workspace:GetDescendants()) do
-                    if v:IsA("Tool") and v.Parent:IsA("Model") then
-                        LocalPlayer.Character.HumanoidRootPart.CFrame = v.Parent.CFrame
-                    end
-                end
-            end)
-        end
-    end
-end)
-
-OrionLib:Init()
+Notify("AlameerSchoolV3 Loaded! Press RightShift to toggle.")
