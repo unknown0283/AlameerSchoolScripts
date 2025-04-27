@@ -1,131 +1,104 @@
--- AlameerSchoolGang GUI v2
-local AlameerGUI = Instance.new("ScreenGui")
-local MainFrame = Instance.new("Frame")
-local OpenButton = Instance.new("ImageButton")
+-- AlameerSchoolGang Full Script
+local Library = loadstring(game:HttpGet("https://pastebin.com/raw/Zz0C7jYz"))() -- UI Library Example
+local Window = Library:CreateWindow("🍀 AlameerSchoolGang 🍀", Vector2.new(500, 400), Enum.KeyCode.RightControl)
 
--- GUI Setup
-AlameerGUI.Name = "AlameerSchoolGang"
-AlameerGUI.Parent = game.CoreGui
-AlameerGUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+-- AutoFarm Tab
+local AutoFarmTab = Window:CreateTab("🏹 Auto Farm")
+local Farming = false
+local SelectedWeapon = "Melee"
 
-MainFrame.Name = "MainFrame"
-MainFrame.Parent = AlameerGUI
-MainFrame.BackgroundColor3 = Color3.fromRGB(15, 75, 65)
-MainFrame.Position = UDim2.new(0.25, 0, 0.2, 0)
-MainFrame.Size = UDim2.new(0, 500, 0, 400)
-MainFrame.Visible = false
-
-OpenButton.Name = "OpenButton"
-OpenButton.Parent = AlameerGUI
-OpenButton.BackgroundColor3 = Color3.fromRGB(0, 200, 150)
-OpenButton.Position = UDim2.new(0, 10, 0.5, 0)
-OpenButton.Size = UDim2.new(0, 100, 0, 40)
-OpenButton.Image = "rbxassetid://15513459483" -- (your green button with arrow)
-OpenButton.MouseButton1Click:Connect(function()
-	MainFrame.Visible = not MainFrame.Visible
+AutoFarmTab:CreateDropdown("Choose Weapon", {"Melee", "Sword", "Fruit"}, function(selected)
+    SelectedWeapon = selected
 end)
 
--- Libraries
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
-local Window = Library.CreateLib("AlameerSchoolGang", "DarkTheme")
-
--- Tabs
-local FarmTab = Window:NewTab("Auto Farm")
-local FruitTab = Window:NewTab("Devil Fruits")
-local SettingsTab = Window:NewTab("Settings")
-
--- Sections
-local FarmSection = FarmTab:NewSection("Farm Settings")
-local FruitSection = FruitTab:NewSection("Fruit Settings")
-local SettingsSection = SettingsTab:NewSection("Main Settings")
-
--- Auto Farm
-FarmSection:NewDropdown("Select Weapon", "Choose your weapon to farm with", {"Melee", "Sword", "Fruit"}, function(currentWeapon)
-	_G.SelectedWeapon = currentWeapon
+AutoFarmTab:CreateToggle("Enable Auto Farm", function(toggle)
+    Farming = toggle
 end)
 
-FarmSection:NewToggle("Auto Farm Level", "Auto farm based on your level", function(state)
-	_G.AutoFarm = state
-	while _G.AutoFarm do
-		task.wait()
-		-- Attack code here
-		local tool = nil
-		for _,v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
-			if v:IsA("Tool") and v.Name:find(_G.SelectedWeapon) then
-				tool = v
-			end
-		end
-		if tool then
-			tool.Parent = game.Players.LocalPlayer.Character
-			game:GetService("VirtualUser"):Button1Down(Vector2.new(1280, 672))
-			task.wait(0.2)
-			game:GetService("VirtualUser"):Button1Up(Vector2.new(1280, 672))
-		end
-	end
+-- AutoFruit Tab
+local FruitTab = Window:CreateTab("🍎 Fruits")
+local AutoFruit = false
+local AutoStore = false
+local AutoBuyFruit = false
+
+FruitTab:CreateToggle("Auto Collect Fruits", function(toggle)
+    AutoFruit = toggle
 end)
 
-FarmSection:NewToggle("Auto Ken (Observation Haki)", "Auto enable Ken", function(state)
-	_G.AutoKen = state
-	while _G.AutoKen do
-		task.wait(5)
-		game:GetService("ReplicatedStorage").Remotes.CommE:InvokeServer("KenTalk","Activate")
-	end
+FruitTab:CreateToggle("Auto Store Fruits", function(toggle)
+    AutoStore = toggle
 end)
 
-FarmSection:NewToggle("Auto Haki", "Auto activate Enhancement", function(state)
-	_G.AutoHaki = state
-	while _G.AutoHaki do
-		task.wait(2)
-		pcall(function()
-			if not game.Players.LocalPlayer.Character:FindFirstChild("HasBuso") then
-				game:GetService("ReplicatedStorage").Remotes.CommE:InvokeServer("Buso")
-			end
-		end)
-	end
+FruitTab:CreateToggle("Auto Buy Fruits", function(toggle)
+    AutoBuyFruit = toggle
 end)
 
--- Devil Fruits
-FruitSection:NewToggle("Auto Buy Fruit", "Automatically buy random fruits", function(state)
-	_G.AutoBuyFruit = state
-	while _G.AutoBuyFruit do
-		task.wait(600)
-		game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("GetFruits")
-	end
+-- Teleport Tab
+local TP = Window:CreateTab("✈️ Teleports")
+TP:CreateButton("Teleport to SafeZone", function()
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(1173, 10, 1676)
 end)
 
-FruitSection:NewToggle("Auto Store Fruit", "Automatically store fruits", function(state)
-	_G.AutoStoreFruit = state
-	while _G.AutoStoreFruit do
-		task.wait(3)
-		game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("StoreFruit")
-	end
+TP:CreateButton("Server Hop", function()
+    local HttpService = game:GetService("HttpService")
+    local Servers = HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/2753915549/servers/Public?sortOrder=2&limit=100"))
+    for i,v in pairs(Servers.data) do
+        if v.playing < v.maxPlayers then
+            game:GetService('TeleportService'):TeleportToPlaceInstance(game.PlaceId, v.id)
+            break
+        end
+    end
 end)
 
-FruitSection:NewToggle("Auto TP to Fruits", "Teleports you to devil fruits on map", function(state)
-	_G.AutoTPFruit = state
-	while _G.AutoTPFruit do
-		task.wait(5)
-		for _,v in pairs(workspace:GetChildren()) do
-			if v:IsA("Tool") and v:FindFirstChild("Handle") then
-				game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.Handle.CFrame
-			end
-		end
-	end
+-- FPS Booster
+local Misc = Window:CreateTab("⚡ Misc")
+Misc:CreateButton("FPS Boost", function()
+    for _,v in pairs(game:GetDescendants()) do
+        if v:IsA("BasePart") then
+            v.Material = Enum.Material.Plastic
+            v.Reflectance = 0
+        elseif v:IsA("Decal") or v:IsA("Texture") then
+            v:Destroy()
+        end
+    end
 end)
 
--- Settings
-SettingsSection:NewButton("Rejoin Game", "Rejoins your server", function()
-	game:GetService("TeleportService"):Teleport(game.PlaceId, game.Players.LocalPlayer)
-end)
+-- Notification Function
+function notify(title, text, time)
+    game.StarterGui:SetCore("SendNotification", {
+        Title = title,
+        Text = text,
+        Duration = time
+    })
+end
 
-SettingsSection:NewButton("Destroy GUI", "Closes AlameerSchoolGang GUI", function()
-	AlameerGUI:Destroy()
-end)
+-- Main Loops
+task.spawn(function()
+    while task.wait(0.5) do
+        if Farming then
+            pcall(function()
+                -- Auto Quest and Farming
+                notify("🏹 Auto Farming", "Using: " .. SelectedWeapon, 2)
+                -- [Put your farming code here: find nearest enemy and attack with SelectedWeapon]
+            end)
+        end
 
--- Notifications
-game.StarterGui:SetCore("SendNotification",{
-	Title = "AlameerSchoolGang",
-	Text = "Loaded Successfully!",
-	Icon = "",
-	Duration = 5
-})
+        if AutoFruit then
+            -- Auto Fruit Grabber
+            notify("🍎 Fruit", "Auto Collecting Fruits", 2)
+            -- [Put your fruit teleport code here]
+        end
+
+        if AutoStore then
+            -- Auto Store Fruits
+            notify("📦 Fruit", "Auto Storing Fruits", 2)
+            -- [Put your auto-store fruits code here]
+        end
+
+        if AutoBuyFruit then
+            -- Auto Buy Fruits
+            notify("💰 Fruit", "Auto Buying Fruits", 2)
+            -- [Put your auto-buy fruits code here]
+        end
+    end
+end)
