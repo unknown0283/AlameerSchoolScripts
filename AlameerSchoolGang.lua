@@ -1,14 +1,14 @@
--- AlameerSchoolGang Hub 🌟 (Dark Green Edition) --
+-- AlameerSchoolGang Ultimate Script
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
+local Window = Library.CreateLib("AlameerSchoolGang 💚", "Midnight")
 
--- Load UI Library
-local Library = loadstring(game:HttpGet("https://pastebin.com/raw/9T8bDqkf"))()
-
-local Window = Library:CreateWindow({
-    Name = "AlameerSchoolGang 💚",
-    Themeable = true,
-    SaveConfig = true,
-    ConfigFolder = "AlameerSchoolGang"
-})
+-- Variables
+_G.AutoFarm = false
+_G.UseMelee = true
+_G.AutoKen = true
+_G.AutoHaki = true
+_G.AutoFruitGrab = true
+_G.AutoFruitStore = true
 
 -- Notifications
 function Notify(msg)
@@ -20,19 +20,6 @@ function Notify(msg)
 end
 
 Notify("Welcome to AlameerSchoolGang 💚!")
-
--- Tabs
-local AutoFarmTab = Window:CreateTab("⚔️ Auto Farm")
-local FruitTab = Window:CreateTab("🍎 Devil Fruits")
-local SettingsTab = Window:CreateTab("⚙️ Settings")
-
--- Variables
-_G.AutoFarm = false
-_G.UseMelee = true
-_G.AutoKen = true
-_G.AutoHaki = true
-_G.AutoFruitGrab = true
-_G.AutoFruitStore = true
 
 -- Auto Farm Functions
 function StartAutoFarm()
@@ -57,7 +44,7 @@ function StartAutoFarm()
     end)
 end
 
--- Haki & Ken Auto ON
+-- Auto Haki & Ken Functions
 spawn(function()
     while wait(5) do
         if _G.AutoKen then
@@ -98,7 +85,6 @@ spawn(function()
 end)
 
 -- GUI Buttons
-
 AutoFarmTab:CreateToggle({
     Name = "Auto Farm Enemies",
     CurrentValue = false,
@@ -167,4 +153,3 @@ SettingsTab:CreateToggle({
 })
 
 Notify("AlameerSchoolGang Loaded 💚 Enjoy!")
-
